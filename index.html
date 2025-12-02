@@ -3,250 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>QR Code</title>
+    <title>QR Nexus</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            font-family: 'Saira', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #000;
-            color: #fff;
-            min-height: 100vh;
-            padding: 0;
-            overflow-x: hidden;
-        }
-        .status-bar {
-            height: 44px;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
-            font-weight: 600;
-            letter-spacing: -0.4px;
-        }
-        .container {
-            padding: 0 16px 100px 16px;
-        }
-        .section {
-            margin-bottom: 35px;
-        }
-        .section-header {
-            font-size: 13px;
-            font-weight: 400;
-            color: #8E8E93;
-            text-transform: uppercase;
-            letter-spacing: -0.08px;
-            margin-bottom: 8px;
-            padding-left: 16px;
-        }
-        .card {
-            background: #1C1C1E;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .input-wrapper {
-            padding: 11px 16px;
-            background: #1C1C1E;
-        }
-        input[type="text"] {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 17px;
-            font-family: 'Saira', -apple-system, BlinkMacSystemFont, sans-serif;
-            letter-spacing: -0.4px;
-            padding: 0;
-        }
-        input[type="text"]::placeholder {
-            color: #3A3A3C;
-        }
-        input[type="text"]:focus {
-            outline: none;
-        }
-        .button {
-            width: 100%;
-            padding: 14px;
-            background: #0A84FF;
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 17px;
-            font-weight: 600;
-            letter-spacing: -0.4px;
-            cursor: pointer;
-            font-family: 'Saira', -apple-system, BlinkMacSystemFont, sans-serif;
-            transition: opacity 0.2s;
-            margin-top: 12px;
-        }
-        .button:active {
-            opacity: 0.6;
-        }
-        .button.secondary {
-            background: #FF453A;
-        }
-        .button.tertiary {
-            background: #30D158;
-        }
-        .qr-display {
-            padding: 32px 16px;
-            text-align: center;
-            background: #1C1C1E;
-            border-radius: 10px;
-            margin-top: 12px;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        .qr-display canvas {
-            border-radius: 12px;
-            background: #fff;
-            padding: 12px;
-        }
-        .empty-state {
-            color: #3A3A3C;
-            font-size: 15px;
-            letter-spacing: -0.24px;
-        }
-        .video-container {
-            position: relative;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 12px;
-            display: none;
-        }
-        .video-container.active {
-            display: block;
-        }
-        video {
-            width: 100%;
-            display: block;
-            max-height: 400px;
-            object-fit: cover;
-        }
-        .scan-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 250px;
-            border: 2px solid #0A84FF;
-            border-radius: 12px;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-        }
-        .scan-corners {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-        .corner {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #0A84FF;
-        }
-        .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
-        .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
-        .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
-        .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
-        .result-card {
-            background: #1C1C1E;
-            border-radius: 10px;
-            padding: 16px;
-            margin-top: 12px;
-            display: none;
-            animation: slideUp 0.3s ease;
-        }
-        .result-card.show {
-            display: block;
-        }
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .result-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            color: #30D158;
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: -0.24px;
-        }
-        .result-text {
-            color: #fff;
-            font-size: 17px;
-            letter-spacing: -0.4px;
-            word-break: break-word;
-            line-height: 1.4;
-            background: #2C2C2E;
-            padding: 12px;
-            border-radius: 8px;
-        }
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 12px;
-        }
-        .scan-hint {
-            text-align: center;
-            color: #fff;
-            font-size: 15px;
-            letter-spacing: -0.24px;
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.6);
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wght@100..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="status-bar">QR Code</div>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="status-bar">
+        <span class="pulse">QR Codes</span>
+    </div>
     
     <div class="container">
         <div class="section">
-            <div class="section-header">Genera codice</div>
+            <div class="section-header">Crea</div>
             <div class="card">
                 <div class="input-wrapper">
-                    <input type="text" id="textInput" placeholder="Inserisci testo">
+                    <span class="material-symbols-outlined">edit_note</span>
+                    <input type="text" id="textInput" placeholder="Inserisci testo o URL...">
                 </div>
             </div>
-            <button class="button" onclick="generateQRCode()">Genera QR Code</button>
+            <button class="button" onclick="generateQRCode()">
+                <span class="material-symbols-outlined">bolt</span>
+                <span>Genera QR Code</span>
+            </button>
             <div class="qr-display" id="qrcode">
-                <div class="empty-state">Nessun codice generato</div>
+                <div class="empty-state">
+                    <div class="icon-text">
+                        <span class="material-symbols-outlined">download</span>
+                        <span>Il codice apparirà qui</span>
+                    </div>
+                    <small style="color: var(--gray); margin-top: 8px;">Clicca sul codice per scaricarlo</small>
+                </div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-header">Scansiona codice</div>
+            <div class="section-header">Scansiona</div>
             <div class="button-group">
-                <button class="button tertiary" onclick="startCamera()">Avvia Scanner</button>
-                <button class="button secondary" onclick="stopCamera()">Interrompi</button>
+                <button class="button tertiary" onclick="startCamera()">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                    <span>Avvia Scanner</span>
+                </button>
+                <button class="button secondary" onclick="stopCamera()">
+                    <span class="material-symbols-outlined">close</span>
+                    <span>Interrompi</span>
+                </button>
             </div>
             
             <div class="video-container" id="videoContainer">
@@ -257,17 +62,38 @@
                         <div class="corner tr"></div>
                         <div class="corner bl"></div>
                         <div class="corner br"></div>
+                        <div class="scan-line"></div>
                     </div>
                 </div>
-                <div class="scan-hint">Inquadra il QR code</div>
+                <div class="scan-hint">
+                    <span class="material-symbols-outlined">qr_code_scanner</span>
+                    <span>Inquadra il codice QR nell'area di scansione</span>
+                </div>
             </div>
 
             <div class="result-card" id="resultCard">
                 <div class="result-header">
-                    <span>✓</span>
-                    <span>Codice rilevato</span>
+                    <span class="material-symbols-outlined" id="resultIcon">check_circle</span>
+                    <span id="resultTitle">Codice rilevato con successo</span>
                 </div>
                 <div class="result-text" id="decodedText"></div>
+                <div id="otpTableContainer" style="display: none;">
+                    <table class="otp-table">
+                        <thead>
+                            <tr>
+                                <th>Parametro</th>
+                                <th>Valore</th>
+                            </tr>
+                        </thead>
+                        <tbody id="otpTableBody">
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="otp-info">
+                        <span class="material-symbols-outlined">info</span>
+                        <span>Questo è un codice 2FA. I valori possono essere copiati usando i pulsanti.</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -275,29 +101,92 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 20}s`;
+                particle.style.animationDuration = `${15 + Math.random() * 10}s`;
+                particle.style.opacity = 0.1 + Math.random() * 0.2;
+                particle.style.background = i % 3 === 0 ? 'var(--primary)' : 
+                                          i % 3 === 1 ? 'var(--tertiary)' : 'var(--secondary)';
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
         function generateQRCode() {
             const text = document.getElementById('textInput').value;
             const qrcodeDiv = document.getElementById('qrcode');
             qrcodeDiv.innerHTML = "";
             
             if(text.trim() === "") {
-                qrcodeDiv.innerHTML = '<div class="empty-state">Inserisci del testo per generare il codice</div>';
+                qrcodeDiv.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon-text">
+                            <span class="material-symbols-outlined">edit</span>
+                            <span>Inserisci del testo per generare il codice</span>
+                        </div>
+                    </div>`;
+                qrcodeDiv.classList.remove('has-code');
                 return;
             }
             
             QRCode.toCanvas(document.createElement('canvas'), text, { 
-                width: 280,
-                margin: 0,
+                width: 320,
+                margin: 2,
                 color: {
-                    dark: '#000',
-                    light: '#fff'
+                    dark: '#000000',
+                    light: '#FFFFFF'
                 }
             }, function (error, canvas) {
                 if (error) {
                     console.error(error);
-                    qrcodeDiv.innerHTML = '<div class="empty-state">Errore generazione codice</div>';
+                    qrcodeDiv.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon-text">
+                                <span class="material-symbols-outlined">error</span>
+                                <span>Errore durante la generazione</span>
+                            </div>
+                        </div>`;
+                    qrcodeDiv.classList.remove('has-code');
                 } else {
                     qrcodeDiv.appendChild(canvas);
+                    qrcodeDiv.classList.add('has-code');
+                    
+                    // Add success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'empty-state';
+                    successMsg.style.marginTop = '20px';
+                    successMsg.innerHTML = `
+                        <div class="icon-text">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span>QR Code generato con successo!</span>
+                        </div>
+                        <small style="color: var(--gray); margin-top: 8px;">Clicca sul codice per scaricarlo</small>
+                    `;
+                    qrcodeDiv.appendChild(successMsg);
+                    
+                    // Add click to download functionality
+                    canvas.style.cursor = 'pointer';
+                    canvas.title = 'Clicca per scaricare';
+                    canvas.onclick = function() {
+                        const link = document.createElement('a');
+                        link.download = 'qr-code.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        
+                        // Show download feedback
+                        const originalTitle = canvas.title;
+                        canvas.title = 'Scaricato!';
+                        setTimeout(() => {
+                            canvas.title = originalTitle;
+                        }, 2000);
+                    };
                 }
             });
         }
@@ -307,6 +196,165 @@
         let resultCard = document.getElementById('resultCard');
         let scanning = false;
         let videoStream = null;
+        let lastResult = '';
+
+        function parseOtpAuthUri(uri) {
+            try {
+                const url = new URL(uri);
+                
+                if (url.protocol !== 'otpauth:') {
+                    return null;
+                }
+                
+                // Parse type from pathname
+                const pathParts = url.pathname.split('/').filter(p => p);
+                const type = pathParts[0] || 'totp';
+                
+                // Parse label
+                const label = decodeURIComponent(pathParts.slice(1).join('/') || '');
+                
+                // Parse parameters
+                const params = {
+                    type: type,
+                    label: label,
+                    secret: url.searchParams.get('secret') || '',
+                    issuer: url.searchParams.get('issuer') || '',
+                    algorithm: url.searchParams.get('algorithm') || 'SHA1',
+                    digits: url.searchParams.get('digits') || '6',
+                    period: url.searchParams.get('period') || '30',
+                    counter: url.searchParams.get('counter') || ''
+                };
+                
+                // Extract account name from label if available
+                if (label && label.includes(':')) {
+                    const parts = label.split(':');
+                    if (parts.length >= 2) {
+                        params.issuerFromLabel = parts[0].trim();
+                        params.account = parts.slice(1).join(':').trim();
+                    } else {
+                        params.account = label;
+                    }
+                } else {
+                    params.account = label;
+                }
+                
+                // Use issuer from label if issuer parameter is not set
+                if (!params.issuer && params.issuerFromLabel) {
+                    params.issuer = params.issuerFromLabel;
+                }
+                
+                return params;
+            } catch (e) {
+                console.error('Error parsing OTP URI:', e);
+                return null;
+            }
+        }
+
+        function displayOtpAuthData(otpData) {
+            const otpTableContainer = document.getElementById('otpTableContainer');
+            const otpTableBody = document.getElementById('otpTableBody');
+            const decodedText = document.getElementById('decodedText');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            
+            // Clear previous content
+            otpTableBody.innerHTML = '';
+            decodedText.innerHTML = '';
+            
+            // Update header
+            resultIcon.textContent = 'lock';
+            resultIcon.style.color = 'var(--tertiary)';
+            resultTitle.textContent = 'Codice 2FA Rilevato';
+            resultTitle.innerHTML += `<span class="otp-badge ${otpData.type}">${otpData.type.toUpperCase()}</span>`;
+            
+            // Show the raw URI
+            decodedText.innerHTML = `<strong>URI originale:</strong><br><small style="color: var(--gray); word-break: break-all;">${lastResult}</small>`;
+            
+            // Add data to table
+            const rows = [
+                { param: 'Tipo', value: otpData.type.toUpperCase(), copyable: false },
+                { param: 'Account', value: otpData.account || 'N/D', copyable: true },
+                { param: 'Issuer', value: otpData.issuer || 'N/D', copyable: true },
+                { param: 'Secret', value: otpData.secret || 'N/D', copyable: true },
+                { param: 'Algoritmo', value: otpData.algorithm, copyable: true },
+                { param: 'Cifre', value: otpData.digits, copyable: true }
+            ];
+            
+            if (otpData.type === 'totp') {
+                rows.push({ param: 'Periodo', value: otpData.period + ' secondi', copyable: true });
+            } else if (otpData.type === 'hotp') {
+                rows.push({ param: 'Contatore', value: otpData.counter || '0', copyable: true });
+            }
+            
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                const tdParam = document.createElement('td');
+                tdParam.textContent = row.param;
+                tdParam.style.fontWeight = '500';
+                
+                const tdValue = document.createElement('td');
+                tdValue.className = 'value-cell';
+                
+                const valueSpan = document.createElement('span');
+                valueSpan.textContent = row.value;
+                
+                tdValue.appendChild(valueSpan);
+                
+                if (row.copyable && row.value !== 'N/D') {
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span> Copia';
+                    copyBtn.onclick = () => copyToClipboard(row.value);
+                    tdValue.appendChild(copyBtn);
+                }
+                
+                tr.appendChild(tdParam);
+                tr.appendChild(tdValue);
+                otpTableBody.appendChild(tr);
+            });
+            
+            // Show OTP table
+            otpTableContainer.style.display = 'block';
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show feedback
+                const originalButtonText = event.target.textContent;
+                event.target.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px;">check</span> Copiato!';
+                event.target.style.background = 'rgba(48, 209, 88, 0.2)';
+                event.target.style.borderColor = 'rgba(48, 209, 88, 0.3)';
+                event.target.style.color = 'var(--tertiary)';
+                
+                setTimeout(() => {
+                    event.target.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span> Copia';
+                    event.target.style.background = '';
+                    event.target.style.borderColor = '';
+                    event.target.style.color = '';
+                }, 2000);
+            });
+        }
+
+        function displayRegularResult(text) {
+            const otpTableContainer = document.getElementById('otpTableContainer');
+            const decodedText = document.getElementById('decodedText');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            
+            // Reset to regular result display
+            otpTableContainer.style.display = 'none';
+            resultIcon.textContent = 'check_circle';
+            resultIcon.style.color = 'var(--tertiary)';
+            resultTitle.textContent = 'Codice rilevato con successo';
+            resultTitle.innerHTML = resultTitle.textContent; // Remove any badges
+            
+            // Check if it's a URL
+            const isUrl = /^https?:\/\//.test(text);
+            decodedText.innerHTML = isUrl ? 
+                `<a href="${text}" target="_blank" style="color: var(--primary); text-decoration: none;">${text}</a>` : 
+                text;
+        }
 
         function startCamera() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -316,8 +364,8 @@
                 navigator.mediaDevices.getUserMedia({ 
                     video: { 
                         facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
                     } 
                 })
                 .then(function(stream) {
@@ -331,11 +379,11 @@
                     };
                 })
                 .catch(err => {
-                    alert("Errore fotocamera: " + err.message);
+                    alert("Impossibile accedere alla fotocamera: " + err.message);
                     videoContainer.classList.remove('active');
                 });
             } else {
-                alert("Fotocamera non disponibile");
+                alert("La fotocamera non è disponibile su questo dispositivo");
             }
         }
 
@@ -344,6 +392,7 @@
                 videoStream.getTracks().forEach(track => track.stop());
                 scanning = false;
                 videoContainer.classList.remove('active');
+                lastResult = '';
             }
         }
 
@@ -364,16 +413,57 @@
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const code = jsQR(imageData.data, canvas.width, canvas.height);
 
-            if (code) {
-                navigator.vibrate && navigator.vibrate(200);
-                document.getElementById('decodedText').textContent = code.data;
+            if (code && code.data !== lastResult) {
+                lastResult = code.data;
+                navigator.vibrate && navigator.vibrate([100, 50, 100]);
+                
+                // Check if it's an OTP auth URI
+                if (lastResult.startsWith('otpauth://')) {
+                    const otpData = parseOtpAuthUri(lastResult);
+                    if (otpData) {
+                        displayOtpAuthData(otpData);
+                    } else {
+                        displayRegularResult(lastResult);
+                    }
+                } else {
+                    displayRegularResult(lastResult);
+                }
+                
                 resultCard.classList.add('show');
-                scanning = false;
-                stopCamera();
-            } else {
-                requestAnimationFrame(scanLoop);
+                
+                // Scroll to result
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
+            
+            requestAnimationFrame(scanLoop);
         }
+
+        // Generate QR on Enter key
+        document.getElementById('textInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQRCode();
+            }
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.card, .button').forEach(element => {
+            element.addEventListener('mousedown', function() {
+                this.style.transform = 'translateY(0)';
+            });
+            
+            element.addEventListener('mouseup', function() {
+                if (this.classList.contains('button')) {
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+            });
+        });
+
+        // Add auto-focus to input
+        document.getElementById('textInput').focus();
     </script>
 </body>
 </html>
