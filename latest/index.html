@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QR Nexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:wght@100..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <!-- Aggiungi per PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F0F0F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="status-bar">
+        <span class="pulse">QR Nexus</span>
+        <button class="menu-btn" onclick="toggleMenu()">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+    
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h3>QR Nexus</h3>
+            <button class="close-menu" onclick="toggleMenu()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="menu-items">
+            <a href="javascript:void(0)" onclick="scrollToSection('generate')" class="menu-item">
+                <span class="material-symbols-outlined">qr_code</span>
+                <span>Genera QR Code</span>
+            </a>
+            <a href="javascript:void(0)" onclick="scrollToSection('scan')" class="menu-item">
+                <span class="material-symbols-outlined">qr_code_scanner</span>
+                <span>Scansiona QR Code</span>
+            </a>
+            <a href="javascript:void(0)" onclick="showHistory()" class="menu-item">
+                <span class="material-symbols-outlined">history</span>
+                <span>Cronologia</span>
+            </a>
+            <a href="javascript:void(0)" onclick="showSettings()" class="menu-item">
+                <span class="material-symbols-outlined">settings</span>
+                <span>Impostazioni</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="section" id="generate">
+            <div class="section-header">Crea QR Code</div>
+            <div class="card">
+                <div class="input-wrapper">
+                    <span class="material-symbols-outlined">edit_note</span>
+                    <input type="text" id="textInput" placeholder="Inserisci testo o URL..." enterkeyhint="done">
+                </div>
+                <div class="input-actions">
+                    <button class="action-btn" onclick="pasteText()" title="Incolla">
+                        <span class="material-symbols-outlined">content_paste</span>
+                    </button>
+                    <button class="action-btn" onclick="clearInput()" title="Pulisci">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="button" onclick="generateQRCode()">
+                    <span class="material-symbols-outlined">bolt</span>
+                    <span>Genera QR Code</span>
+                </button>
+                <button class="button secondary" onclick="shareQR()" id="shareBtn" style="display: none;">
+                    <span class="material-symbols-outlined">share</span>
+                    <span>Condividi</span>
+                </button>
+            </div>
+            
+            <div class="qr-display" id="qrcode">
+                <div class="empty-state">
+                    <div class="icon-text">
+                        <span class="material-symbols-outlined">qr_code</span>
+                        <span>Il codice apparirà qui</span>
+                    </div>
+                    <small style="color: var(--gray); margin-top: 8px;">Tocca per scaricare o condividere</small>
+                </div>
+            </div>
+            
+            <div class="qr-actions" id="qrActions" style="display: none;">
+                <button class="action-btn large" onclick="downloadQR()">
+                    <span class="material-symbols-outlined">download</span>
+                    <span>Scarica</span>
+                </button>
+                <button class="action-btn large" onclick="shareQR()">
+                    <span class="material-symbols-outlined">share</span>
+                    <span>Condividi</span>
+                </button>
+                <button class="action-btn large" onclick="saveToHistory()">
+                    <span class="material-symbols-outlined">save</span>
+                    <span>Salva</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="section" id="scan">
+            <div class="section-header">Scansiona QR Code</div>
+            
+            <div class="permission-card" id="permissionCard">
+                <div class="icon-text">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                    <span>Autorizza la fotocamera</span>
+                </div>
+                <p class="permission-text">Per scansionare i codici QR, l'app necessita dell'accesso alla fotocamera.</p>
+                <button class="button" onclick="requestCameraPermission()">
+                    <span class="material-symbols-outlined">check</span>
+                    <span>Autorizza fotocamera</span>
+                </button>
+            </div>
+            
+            <div class="video-container" id="videoContainer">
+                <video id="video" autoplay playsinline></video>
+                <div class="scan-overlay">
+                    <div class="scan-corners">
+                        <div class="corner tl"></div>
+                        <div class="corner tr"></div>
+                        <div class="corner bl"></div>
+                        <div class="corner br"></div>
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+                <div class="scan-hint">
+                    <span class="material-symbols-outlined">qr_code_scanner</span>
+                    <span>Inquadra il codice QR</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="button" onclick="startCamera()" id="startBtn">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                    <span>Avvia scanner</span>
+                </button>
+                <button class="button secondary" onclick="stopCamera()" id="stopBtn" style="display: none;">
+                    <span class="material-symbols-outlined">stop</span>
+                    <span>Interrompi</span>
+                </button>
+                <button class="button tertiary" onclick="toggleFlash()" id="flashBtn" style="display: none;">
+                    <span class="material-symbols-outlined">flashlight_on</span>
+                    <span>Flash</span>
+                </button>
+            </div>
+
+            <div class="result-card" id="resultCard">
+                <div class="result-header">
+                    <span class="material-symbols-outlined" id="resultIcon">check_circle</span>
+                    <span id="resultTitle">Codice rilevato</span>
+                    <button class="close-result" onclick="closeResult()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="result-text" id="decodedText"></div>
+                <div id="otpTableContainer" style="display: none;">
+                    <table class="otp-table">
+                        <thead>
+                            <tr>
+                                <th>Parametro</th>
+                                <th>Valore</th>
+                            </tr>
+                        </thead>
+                        <tbody id="otpTableBody">
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="otp-info">
+                        <span class="material-symbols-outlined">info</span>
+                        <span>Codice 2FA - Tocca su Copia per i valori</span>
+                    </div>
+                </div>
+                <div class="result-actions" id="resultActions">
+                    <!-- Actions will be added dynamically -->
+                </div>
+            </div>
+            
+            <div class="scan-history" id="scanHistory" style="display: none;">
+                <h4>Cronologia scansioni</h4>
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="scrollToSection('generate')">
+            <span class="material-symbols-outlined">qr_code</span>
+            <span>Genera</span>
+        </button>
+        <button class="nav-btn" onclick="scrollToSection('scan')">
+            <span class="material-symbols-outlined">qr_code_scanner</span>
+            <span>Scansiona</span>
+        </button>
+        <button class="nav-btn" onclick="toggleMenu()">
+            <span class="material-symbols-outlined">menu</span>
+            <span>Menu</span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <script>
+        // Mobile-specific optimizations
+        let currentQRCanvas = null;
+        let flashOn = false;
+        let scanHistory = JSON.parse(localStorage.getItem('scanHistory')) || [];
+        
+        // Create floating particles (reduced for mobile performance)
+        function createParticles() {
+            const container = document.getElementById('particles');
+            container.innerHTML = '';
+            for (let i = 0; i < 25; i++) { // Reduced from 50 for better mobile performance
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                particle.style.animationDuration = `${10 + Math.random() * 5}s`;
+                particle.style.opacity = 0.05 + Math.random() * 0.1;
+                particle.style.background = i % 3 === 0 ? 'var(--primary)' : 
+                                          i % 3 === 1 ? 'var(--tertiary)' : 'var(--secondary)';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            createParticles();
+            setupMobileEvents();
+            checkPermissions();
+            
+            // Add haptic feedback support
+            if ('vibrate' in navigator) {
+                window.hapticFeedback = function(pattern) {
+                    navigator.vibrate(pattern);
+                };
+            } else {
+                window.hapticFeedback = function() {};
+            }
+            
+            // Prevent zoom on double-tap
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            // Handle back button on Android
+            if (window.history && window.history.pushState) {
+                window.history.pushState(null, null, window.location.href);
+                window.onpopstate = function() {
+                    if (videoStream) {
+                        stopCamera();
+                    }
+                    window.history.pushState(null, null, window.location.href);
+                };
+            }
+        });
+
+        function setupMobileEvents() {
+            // Better touch handling for buttons
+            document.querySelectorAll('.button, .nav-btn, .action-btn').forEach(btn => {
+                btn.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'scale(0.95)';
+                    e.preventDefault();
+                }, { passive: false });
+                
+                btn.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
+                
+                btn.addEventListener('touchcancel', function() {
+                    this.style.transform = '';
+                });
+            });
+            
+            // Long press for menu
+            let pressTimer;
+            document.querySelector('.status-bar .pulse').addEventListener('touchstart', function(e) {
+                pressTimer = setTimeout(() => {
+                    showToast('👋 Benvenuto in QR Nexus!');
+                    hapticFeedback(50);
+                }, 800);
+            });
+            
+            document.querySelector('.status-bar .pulse').addEventListener('touchend', function() {
+                clearTimeout(pressTimer);
+            });
+            
+            // Pull to refresh prevention
+            let startY;
+            document.addEventListener('touchstart', e => {
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            document.addEventListener('touchmove', e => {
+                if (startY < e.touches[0].clientY && window.scrollY === 0) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            const isOpen = menu.classList.toggle('open');
+            hapticFeedback(30);
+            
+            if (isOpen) {
+                document.body.style.overflow = 'hidden';
+                document.querySelector('.bottom-nav').style.transform = 'translateY(100%)';
+            } else {
+                document.body.style.overflow = '';
+                document.querySelector('.bottom-nav').style.transform = '';
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            toggleMenu();
+            hapticFeedback(20);
+        }
+
+        function pasteText() {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText().then(text => {
+                    document.getElementById('textInput').value = text;
+                    showToast('Testo incollato');
+                    hapticFeedback(20);
+                }).catch(err => {
+                    showToast('Impossibile leggere dagli appunti');
+                });
+            } else {
+                // Fallback for older browsers
+                document.getElementById('textInput').focus();
+                showToast('Tocca e tieni premuto nel campo per incollare');
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('textInput').focus();
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon-text">
+                        <span class="material-symbols-outlined">qr_code</span>
+                        <span>Il codice apparirà qui</span>
+                    </div>
+                    <small style="color: var(--gray); margin-top: 8px;">Tocca per scaricare o condividere</small>
+                </div>`;
+            qrcodeDiv.classList.remove('has-code');
+            document.getElementById('qrActions').style.display = 'none';
+            hapticFeedback(10);
+        }
+
+        function generateQRCode() {
+            const text = document.getElementById('textInput').value.trim();
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = "";
+            
+            if(!text) {
+                showToast('Inserisci del testo per generare il QR code');
+                hapticFeedback([100, 50, 100]);
+                return;
+            }
+            
+            showToast('Generazione QR code in corso...');
+            
+            // Disable button during generation
+            const generateBtn = document.querySelector('.button[onclick="generateQRCode()"]');
+            const originalText = generateBtn.innerHTML;
+            generateBtn.innerHTML = '<span class="material-symbols-outlined">sync</span><span>Generazione...</span>';
+            generateBtn.disabled = true;
+            
+            QRCode.toCanvas(document.createElement('canvas'), text, { 
+                width: 280, // Reduced for mobile
+                margin: 1,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error, canvas) {
+                generateBtn.innerHTML = originalText;
+                generateBtn.disabled = false;
+                
+                if (error) {
+                    console.error(error);
+                    showToast('Errore durante la generazione');
+                    hapticFeedback([100, 50, 100, 50, 100]);
+                    return;
+                }
+                
+                currentQRCanvas = canvas;
+                qrcodeDiv.appendChild(canvas);
+                qrcodeDiv.classList.add('has-code');
+                
+                // Show actions
+                document.getElementById('qrActions').style.display = 'flex';
+                
+                // Add click to download/action
+                canvas.style.cursor = 'pointer';
+                canvas.onclick = function() {
+                    showActionMenu(canvas, text);
+                };
+                
+                showToast('QR code generato con successo!');
+                hapticFeedback(100);
+                
+                // Scroll to show the QR code
+                setTimeout(() => {
+                    qrcodeDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            });
+        }
+
+        function showActionMenu(canvas, text) {
+            // Create action sheet (iOS style)
+            const actionSheet = document.createElement('div');
+            actionSheet.className = 'action-sheet';
+            actionSheet.innerHTML = `
+                <div class="action-sheet-content">
+                    <div class="action-sheet-header">
+                        <h4>Azioni QR Code</h4>
+                        <button class="close-sheet" onclick="this.parentElement.parentElement.remove()">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div class="action-items">
+                        <button class="action-item" onclick="downloadQR(); this.parentElement.parentElement.parentElement.remove()">
+                            <span class="material-symbols-outlined">download</span>
+                            <span>Scarica immagine</span>
+                        </button>
+                        <button class="action-item" onclick="shareQR(); this.parentElement.parentElement.parentElement.remove()">
+                            <span class="material-symbols-outlined">share</span>
+                            <span>Condividi</span>
+                        </button>
+                        <button class="action-item" onclick="saveToHistory(); this.parentElement.parentElement.parentElement.remove()">
+                            <span class="material-symbols-outlined">save</span>
+                            <span>Salva nella cronologia</span>
+                        </button>
+                        <button class="action-item" onclick="copyText('${text.replace(/'/g, "\\'")}'); this.parentElement.parentElement.parentElement.remove()">
+                            <span class="material-symbols-outlined">content_copy</span>
+                            <span>Copia testo</span>
+                        </button>
+                        <button class="action-item cancel" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            <span>Annulla</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(actionSheet);
+            setTimeout(() => {
+                actionSheet.classList.add('show');
+            }, 10);
+            hapticFeedback(20);
+        }
+
+        function downloadQR() {
+            if (!currentQRCanvas) return;
+            
+            const link = document.createElement('a');
+            link.download = `qr-code-${Date.now()}.png`;
+            link.href = currentQRCanvas.toDataURL('image/png');
+            link.click();
+            
+            showToast('QR code scaricato!');
+            hapticFeedback(50);
+        }
+
+        async function shareQR() {
+            if (!currentQRCanvas) return;
+            
+            if (navigator.share) {
+                try {
+                    const blob = await new Promise(resolve => currentQRCanvas.toBlob(resolve));
+                    const file = new File([blob], 'qr-code.png', { type: 'image/png' });
+                    
+                    await navigator.share({
+                        files: [file],
+                        title: 'QR Code',
+                        text: 'Condiviso da QR Nexus'
+                    });
+                } catch (err) {
+                    console.log('Share cancelled or failed:', err);
+                    // Fallback to download
+                    downloadQR();
+                }
+            } else {
+                downloadQR();
+            }
+        }
+
+        function saveToHistory() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text || !currentQRCanvas) return;
+            
+            const history = JSON.parse(localStorage.getItem('qrHistory') || '[]');
+            history.unshift({
+                text: text,
+                timestamp: new Date().toISOString(),
+                image: currentQRCanvas.toDataURL('image/png')
+            });
+            
+            // Keep only last 50 items
+            if (history.length > 50) history.pop();
+            
+            localStorage.setItem('qrHistory', JSON.stringify(history));
+            showToast('Salvato nella cronologia');
+            hapticFeedback(50);
+        }
+
+        function checkPermissions() {
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'camera' }).then(permissionStatus => {
+                    if (permissionStatus.state === 'granted') {
+                        document.getElementById('permissionCard').style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        function requestCameraPermission() {
+            startCamera();
+        }
+
+        async function startCamera() {
+            try {
+                document.getElementById('permissionCard').style.display = 'none';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: { ideal: "environment" },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                video.srcObject = stream;
+                videoStream = stream;
+                
+                document.getElementById('videoContainer').classList.add('active');
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'flex';
+                document.getElementById('flashBtn').style.display = 'flex';
+                
+                showToast('Scanner attivo');
+                hapticFeedback(50);
+                
+                scanning = true;
+                scanLoop();
+                
+            } catch (err) {
+                console.error('Camera error:', err);
+                showToast('Errore fotocamera: ' + err.message);
+                document.getElementById('permissionCard').style.display = 'block';
+            }
+        }
+
+        function toggleFlash() {
+            if (!videoStream) return;
+            
+            const track = videoStream.getVideoTracks()[0];
+            if (!track || !track.getCapabilities().torch) {
+                showToast('Flash non disponibile');
+                return;
+            }
+            
+            flashOn = !flashOn;
+            track.applyConstraints({
+                advanced: [{ torch: flashOn }]
+            });
+            
+            document.getElementById('flashBtn').innerHTML = flashOn ? 
+                '<span class="material-symbols-outlined">flashlight_off</span><span>Flash</span>' :
+                '<span class="material-symbols-outlined">flashlight_on</span><span>Flash</span>';
+            
+            showToast(flashOn ? 'Flash acceso' : 'Flash spento');
+            hapticFeedback(20);
+        }
+
+        function closeResult() {
+            document.getElementById('resultCard').classList.remove('show');
+            hapticFeedback(10);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Testo copiato negli appunti');
+                hapticFeedback(20);
+            });
+        }
+
+        // Mobile-optimized scan loop
+        function scanLoop() {
+            if (!scanning || !video.videoWidth || !video.videoHeight) {
+                requestAnimationFrame(scanLoop);
+                return;
+            }
+
+            // Throttle scanning for mobile performance
+            if (Date.now() - (window.lastScan || 0) < 200) { // Scan every 200ms
+                requestAnimationFrame(scanLoop);
+                return;
+            }
+            window.lastScan = Date.now();
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 320; // Lower resolution for mobile performance
+            canvas.height = 240;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+            if (code && code.data !== lastResult) {
+                lastResult = code.data;
+                hapticFeedback([100, 50, 100]);
+                
+                // Parse and display result
+                if (lastResult.startsWith('otpauth://')) {
+                    const otpData = parseOtpAuthUri(lastResult);
+                    if (otpData) {
+                        displayOtpAuthData(otpData);
+                    } else {
+                        displayRegularResult(lastResult);
+                    }
+                } else {
+                    displayRegularResult(lastResult);
+                }
+                
+                document.getElementById('resultCard').classList.add('show');
+                
+                // Save to scan history
+                scanHistory.unshift({
+                    text: lastResult,
+                    timestamp: new Date().toISOString(),
+                    type: lastResult.startsWith('otpauth://') ? 'otp' : 'regular'
+                });
+                
+                if (scanHistory.length > 50) scanHistory.pop();
+                localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
+                
+                // Scroll to result with mobile-friendly behavior
+                setTimeout(() => {
+                    document.getElementById('resultCard').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest'
+                    });
+                }, 100);
+            }
+            
+            requestAnimationFrame(scanLoop);
+        }
+
+        // Parse OTP URI function remains the same
+        function parseOtpAuthUri(uri) {
+            try {
+                const url = new URL(uri);
+                if (url.protocol !== 'otpauth:') return null;
+                
+                const pathParts = url.pathname.split('/').filter(p => p);
+                const type = pathParts[0] || 'totp';
+                const label = decodeURIComponent(pathParts.slice(1).join('/') || '');
+                
+                const params = {
+                    type: type,
+                    label: label,
+                    secret: url.searchParams.get('secret') || '',
+                    issuer: url.searchParams.get('issuer') || '',
+                    algorithm: url.searchParams.get('algorithm') || 'SHA1',
+                    digits: url.searchParams.get('digits') || '6',
+                    period: url.searchParams.get('period') || '30',
+                    counter: url.searchParams.get('counter') || ''
+                };
+                
+                if (label && label.includes(':')) {
+                    const parts = label.split(':');
+                    if (parts.length >= 2) {
+                        params.issuerFromLabel = parts[0].trim();
+                        params.account = parts.slice(1).join(':').trim();
+                    } else {
+                        params.account = label;
+                    }
+                } else {
+                    params.account = label;
+                }
+                
+                if (!params.issuer && params.issuerFromLabel) {
+                    params.issuer = params.issuerFromLabel;
+                }
+                
+                return params;
+            } catch (e) {
+                console.error('Error parsing OTP URI:', e);
+                return null;
+            }
+        }
+
+        function displayOtpAuthData(otpData) {
+            const otpTableContainer = document.getElementById('otpTableContainer');
+            const otpTableBody = document.getElementById('otpTableBody');
+            const decodedText = document.getElementById('decodedText');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultActions = document.getElementById('resultActions');
+            
+            otpTableBody.innerHTML = '';
+            decodedText.innerHTML = '';
+            resultActions.innerHTML = '';
+            
+            resultIcon.textContent = 'lock';
+            resultIcon.style.color = 'var(--tertiary)';
+            resultTitle.innerHTML = `Codice 2FA <span class="otp-badge ${otpData.type}">${otpData.type.toUpperCase()}</span>`;
+            
+            decodedText.innerHTML = `<small style="color: var(--gray); word-break: break-word;">${lastResult.substring(0, 100)}${lastResult.length > 100 ? '...' : ''}</small>`;
+            
+            const rows = [
+                { param: 'Tipo', value: otpData.type.toUpperCase(), copyable: false },
+                { param: 'Account', value: otpData.account || 'N/D', copyable: true },
+                { param: 'Issuer', value: otpData.issuer || 'N/D', copyable: true },
+                { param: 'Secret', value: otpData.secret ? '••••••••' : 'N/D', copyable: true, actualValue: otpData.secret },
+                { param: 'Algoritmo', value: otpData.algorithm, copyable: true },
+                { param: 'Cifre', value: otpData.digits, copyable: true }
+            ];
+            
+            if (otpData.type === 'totp') {
+                rows.push({ param: 'Periodo', value: otpData.period + ' secondi', copyable: true });
+            } else if (otpData.type === 'hotp') {
+                rows.push({ param: 'Contatore', value: otpData.counter || '0', copyable: true });
+            }
+            
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                const tdParam = document.createElement('td');
+                tdParam.textContent = row.param;
+                
+                const tdValue = document.createElement('td');
+                tdValue.className = 'value-cell';
+                
+                const valueSpan = document.createElement('span');
+                valueSpan.textContent = row.value;
+                
+                tdValue.appendChild(valueSpan);
+                
+                if (row.copyable && row.value !== 'N/D') {
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px;">content_copy</span>';
+                    copyBtn.onclick = () => copyToClipboard(row.actualValue || row.value);
+                    tdValue.appendChild(copyBtn);
+                }
+                
+                tr.appendChild(tdParam);
+                tr.appendChild(tdValue);
+                otpTableBody.appendChild(tr);
+            });
+            
+            otpTableContainer.style.display = 'block';
+            
+            // Add action buttons
+            const actionButtons = [
+                { icon: 'content_copy', text: 'Copia tutto', action: () => copyToClipboard(lastResult) },
+                { icon: 'share', text: 'Condividi', action: () => shareText(lastResult) },
+                { icon: 'save', text: 'Salva', action: () => saveScanResult() }
+            ];
+            
+            actionButtons.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = 'action-btn';
+                button.onclick = btn.action;
+                button.innerHTML = `<span class="material-symbols-outlined">${btn.icon}</span><span>${btn.text}</span>`;
+                resultActions.appendChild(button);
+            });
+        }
+
+        function displayRegularResult(text) {
+            const otpTableContainer = document.getElementById('otpTableContainer');
+            const decodedText = document.getElementById('decodedText');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultActions = document.getElementById('resultActions');
+            
+            otpTableContainer.style.display = 'none';
+            resultIcon.textContent = 'check_circle';
+            resultIcon.style.color = 'var(--tertiary)';
+            resultTitle.textContent = 'Codice rilevato';
+            resultActions.innerHTML = '';
+            
+            const isUrl = /^https?:\/\//.test(text);
+            decodedText.innerHTML = isUrl ? 
+                `<a href="${text}" onclick="event.stopPropagation(); window.open('${text}', '_blank');">${text}</a>` : 
+                text;
+            
+            // Add action buttons
+            const actionButtons = [
+                { icon: 'content_copy', text: 'Copia', action: () => copyToClipboard(text) },
+                { icon: 'share', text: 'Condividi', action: () => shareText(text) },
+                { icon: 'open_in_new', text: 'Apri', action: () => window.open(text, '_blank'), show: isUrl },
+                { icon: 'save', text: 'Salva', action: () => saveScanResult() }
+            ];
+            
+            actionButtons.forEach(btn => {
+                if (btn.show === false) return;
+                const button = document.createElement('button');
+                button.className = 'action-btn';
+                button.onclick = btn.action;
+                button.innerHTML = `<span class="material-symbols-outlined">${btn.icon}</span><span>${btn.text}</span>`;
+                resultActions.appendChild(button);
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copiato negli appunti');
+                hapticFeedback(20);
+            });
+        }
+
+        function shareText(text) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'QR Code Scansionato',
+                    text: text
+                }).catch(err => {
+                    copyToClipboard(text);
+                });
+            } else {
+                copyToClipboard(text);
+            }
+        }
+
+        function saveScanResult() {
+            showToast('Salvato nella cronologia');
+            hapticFeedback(50);
+        }
+
+        // Handle mobile keyboard
+        document.getElementById('textInput').addEventListener('focus', function() {
+            setTimeout(() => {
+                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+
+        // Generate QR on mobile keyboard go/enter
+        document.getElementById('textInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                generateQRCode();
+                this.blur(); // Hide keyboard
+            }
+        });
+
+        // Handle orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                if (videoStream) {
+                    stopCamera();
+                    setTimeout(startCamera, 300);
+                }
+            }, 100);
+        });
+
+        // Prevent accidental zoom
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
